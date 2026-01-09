@@ -62,6 +62,30 @@ class Job_Search_Widget extends Widget_Base {
                 'default' => 'yes',
             ]
         );
+        
+        $this->add_control(
+            'search_label',
+            [
+                'label' => esc_html__('Search Field Label', 'job-listings-search-filter'),
+                'type' => Controls_Manager::TEXT,
+                'default' => esc_html__('Search by keyword', 'job-listings-search-filter'),
+                'condition' => [
+                    'show_search' => 'yes',
+                ],
+            ]
+        );
+        
+        $this->add_control(
+            'search_placeholder',
+            [
+                'label' => esc_html__('Search Field Placeholder', 'job-listings-search-filter'),
+                'type' => Controls_Manager::TEXT,
+                'default' => esc_html__('What vacancy are you looking for?', 'job-listings-search-filter'),
+                'condition' => [
+                    'show_search' => 'yes',
+                ],
+            ]
+        );
 
         $this->add_control(
             'show_positions',
@@ -131,6 +155,30 @@ class Job_Search_Widget extends Widget_Base {
                 'default' => esc_html__('Contract type', 'job-listings-search-filter'),
                 'condition' => [
                     'show_types' => 'yes',
+                ],
+            ]
+        );
+        
+        $this->add_control(
+            'show_category',
+            [
+                'label' => esc_html__('Show Category Filter', 'job-listings-search-filter'),
+                'type' => Controls_Manager::SWITCHER,
+                'label_on' => esc_html__('Show', 'job-listings-search-filter'),
+                'label_off' => esc_html__('Hide', 'job-listings-search-filter'),
+                'return_value' => 'yes',
+                'default' => 'yes',
+            ]
+        );
+        
+        $this->add_control(
+            'category_label',
+            [
+                'label' => esc_html__('Category Label', 'job-listings-search-filter'),
+                'type' => Controls_Manager::TEXT,
+                'default' => esc_html__('Category', 'job-listings-search-filter'),
+                'condition' => [
+                    'show_category' => 'yes',
                 ],
             ]
         );
@@ -488,6 +536,8 @@ class Job_Search_Widget extends Widget_Base {
     }
     
     protected function render_inline_layout($settings, $widget_id, $search_keywords, $search_location, $search_job_type, $search_category, $search_date_posted, $current_url) {
+        $search_label = !empty($settings['search_label']) ? $settings['search_label'] : esc_html__('Search by keyword', 'job-listings-search-filter');
+        $search_placeholder = !empty($settings['search_placeholder']) ? $settings['search_placeholder'] : esc_html__('What vacancy are you looking for?', 'job-listings-search-filter');
         ?>
         <div class="wpjm-filter-widget wpjm-inline-layout" data-widget-id="<?php echo esc_attr($widget_id); ?>" data-search-type="<?php echo esc_attr($settings['search_type']); ?>">
             <form method="get" action="" class="wpjm-filter-form wpjm-ajax-search-form wpjm-inline-form" data-widget-id="<?php echo esc_attr($widget_id); ?>" data-search-type="<?php echo esc_attr($settings['search_type']); ?>">
@@ -495,13 +545,13 @@ class Job_Search_Widget extends Widget_Base {
                 <div class="wpjm-inline-search-fields">
                     <?php if ($settings['show_search'] === 'yes') : ?>
                     <div class="wpjm-inline-field">
-                        <label class="wpjm-inline-label"><?php echo esc_html__('Search by keyword', 'job-listings-search-filter'); ?></label>
+                        <label class="wpjm-inline-label"><?php echo esc_html($search_label); ?></label>
                         <div class="wpjm-inline-input-wrapper">
                             <input 
                                 type="text" 
                                 name="search_keywords"
                                 class="wpjm-inline-input"
-                                placeholder="<?php echo esc_attr__('What vacancy are you looking for?', 'job-listings-search-filter'); ?>"
+                                placeholder="<?php echo esc_attr($search_placeholder); ?>"
                                 value="<?php echo esc_attr($search_keywords); ?>"
                             />
                             <button type="submit" class="wpjm-inline-btn">
@@ -639,9 +689,12 @@ class Job_Search_Widget extends Widget_Base {
     }
     
     protected function render_sidebar_layout($settings, $widget_id, $search_keywords, $search_location, $search_job_type, $search_category, $search_date_posted, $current_url) {
+        $search_label = !empty($settings['search_label']) ? $settings['search_label'] : esc_html__('Search by keyword', 'job-listings-search-filter');
+        $search_placeholder = !empty($settings['search_placeholder']) ? $settings['search_placeholder'] : esc_html__('What vacancy are you looking for?', 'job-listings-search-filter');
         $positions_label = !empty($settings['positions_label']) ? $settings['positions_label'] : esc_html__('Function', 'job-listings-search-filter');
         $location_label = !empty($settings['location_label']) ? $settings['location_label'] : esc_html__('Location', 'job-listings-search-filter');
         $types_label = !empty($settings['types_label']) ? $settings['types_label'] : esc_html__('Contract type', 'job-listings-search-filter');
+        $category_label = !empty($settings['category_label']) ? $settings['category_label'] : esc_html__('Category', 'job-listings-search-filter');
         $date_posted_label = !empty($settings['date_posted_label']) ? $settings['date_posted_label'] : esc_html__('Date Posted', 'job-listings-search-filter');
         $job_status_label = !empty($settings['job_status_label']) ? $settings['job_status_label'] : esc_html__('Job Status', 'job-listings-search-filter');
         ?>
@@ -654,12 +707,12 @@ class Job_Search_Widget extends Widget_Base {
                 
                 <?php if ($settings['show_search'] === 'yes') : ?>
                 <div class="wpjm-filter-field">
-                    <label class="wpjm-filter-label"><?php echo esc_html__('Search by keyword', 'job-listings-search-filter'); ?></label>
+                    <label class="wpjm-filter-label"><?php echo esc_html($search_label); ?></label>
                     <input 
                         type="text" 
                         name="search_keywords"
                         class="wpjm-filter-input"
-                        placeholder="<?php echo esc_attr__('What vacancy are you looking for?', 'job-listings-search-filter'); ?>"
+                        placeholder="<?php echo esc_attr($search_placeholder); ?>"
                         value="<?php echo esc_attr($search_keywords); ?>"
                     />
                 </div>
@@ -764,18 +817,38 @@ class Job_Search_Widget extends Widget_Base {
                             <input type="checkbox" name="remote_position" value="1" <?php checked($search_remote, '1'); ?>>
                             <span><?php echo esc_html__('Remote Position', 'job-listings-search-filter'); ?></span>
                         </label>
+                    </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($settings['show_category'] === 'yes') : ?>
+                <div class="wpjm-filter-field wpjm-radio-group wpjm-collapsible-section">
+                    <div class="wpjm-collapsible-header">
+                        <label class="wpjm-filter-label"><?php echo esc_html($category_label); ?></label>
+                        <span class="wpjm-collapse-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="wpjm-collapsible-content" style="display: block;">
+                    <div class="wpjm-radio-options">
+                        <label class="wpjm-radio-option">
+                            <input type="radio" name="category" value="" <?php checked(empty($search_category)); ?>>
+                            <span><?php echo esc_html__('All Categories', 'job-listings-search-filter'); ?></span>
+                        </label>
                         <?php
                         $categories = get_terms([
                             'taxonomy' => 'job_listing_category',
                             'hide_empty' => false,
                         ]);
                         if (!is_wp_error($categories) && !empty($categories)) {
-                            $selected_categories = !empty($search_category) ? explode(',', $search_category) : [];
                             foreach ($categories as $cat) {
                                 printf(
-                                    '<label class="wpjm-checkbox-option"><input type="checkbox" name="category[]" value="%s" %s><span>%s</span></label>',
+                                    '<label class="wpjm-radio-option"><input type="radio" name="category" value="%s" %s><span>%s</span></label>',
                                     esc_attr($cat->slug),
-                                    in_array($cat->slug, $selected_categories) ? 'checked' : '',
+                                    checked($search_category, $cat->slug, false),
                                     esc_html($cat->name)
                                 );
                             }

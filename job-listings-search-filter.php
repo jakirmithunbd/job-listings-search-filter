@@ -4,8 +4,8 @@
  * Plugin URI: https://wordpress.org/plugins/job-listings-search-filter/
  * Description: Seamlessly integrate WP Job Manager with Elementor Loop Grids and Dynamic Tags for powerful job listing displays with advanced filtering.
  * Version: 1.0.0
- * Author: Jakir Mithun
- * Author URI: https://jakirmithun.com
+ * Author: CodeConfig
+ * Author URI: 
  * Text Domain: job-listings-search-filter
  * Domain Path: /languages
  * Requires at least: 5.8
@@ -112,6 +112,7 @@ final class Job_Listings_Search_Filter {
     private function includes() {
         require_once JLSF_PATH . 'includes/dynamic-tags/job-title-tag.php';
         require_once JLSF_PATH . 'includes/dynamic-tags/job-type-tag.php';
+        require_once JLSF_PATH . 'includes/dynamic-tags/job-category-tag.php';
         require_once JLSF_PATH . 'includes/dynamic-tags/job-location-tag.php';
         require_once JLSF_PATH . 'includes/dynamic-tags/job-company-tag.php';
         require_once JLSF_PATH . 'includes/dynamic-tags/job-date-tag.php';
@@ -184,6 +185,7 @@ final class Job_Listings_Search_Filter {
         // Register individual tags
         $dynamic_tags_manager->register(new \Job_Listings_Search_Filter\Dynamic_Tags\Job_Title_Tag());
         $dynamic_tags_manager->register(new \Job_Listings_Search_Filter\Dynamic_Tags\Job_Type_Tag());
+        $dynamic_tags_manager->register(new \Job_Listings_Search_Filter\Dynamic_Tags\Job_Category_Tag());
         $dynamic_tags_manager->register(new \Job_Listings_Search_Filter\Dynamic_Tags\Job_Location_Tag());
         $dynamic_tags_manager->register(new \Job_Listings_Search_Filter\Dynamic_Tags\Job_Company_Tag());
         $dynamic_tags_manager->register(new \Job_Listings_Search_Filter\Dynamic_Tags\Job_Date_Tag());

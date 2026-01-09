@@ -9,14 +9,14 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-class Job_Location_Tag extends Tag {
+class Job_Category_Tag extends Tag {
 
     public function get_name() {
-        return 'wpjm-job-location';
+        return 'wpjm-job-category';
     }
 
     public function get_title() {
-        return esc_html__('Job Location', 'job-listings-search-filter');
+        return esc_html__('Job Category', 'job-listings-search-filter');
     }
 
     public function get_group() {
@@ -29,11 +29,11 @@ class Job_Location_Tag extends Tag {
 
     protected function register_controls() {
         $this->add_control(
-            'link_to_map',
+            'separator',
             [
-                'label' => esc_html__('Link to Map', 'job-listings-search-filter'),
-                'type' => Controls_Manager::SWITCHER,
-                'default' => '',
+                'label' => esc_html__('Separator', 'job-listings-search-filter'),
+                'type' => Controls_Manager::TEXT,
+                'default' => ', ',
             ]
         );
     }
@@ -45,20 +45,19 @@ class Job_Location_Tag extends Tag {
             return;
         }
 
-        $location = get_post_meta($post_id, '_job_location', true);
+        $terms = get_the_terms($post_id, 'job_listing_category');
         
-        if (empty($location)) {
-            echo esc_html__('Anywhere', 'job-listings-search-filter');
+        if (empty($terms) || is_wp_error($terms)) {
             return;
         }
 
         $settings = $this->get_settings();
+        $separator = $settings['separator'];
+        
+        $categories = array_map(function($term) {
+            return esc_html($term->name);
+        }, $terms);
 
-        if ('yes' === $settings['link_to_map']) {
-            $map_url = 'https://www.google.com/maps/search/' . urlencode($location);
-            echo '<a href="' . esc_url($map_url) . '" target="_blank" rel="nofollow">' . esc_html($location) . '</a>';
-        } else {
-            echo esc_html($location);
-        }
+        echo implode($separator, $categories);
     }
 }
