@@ -1,0 +1,476 @@
+/* Job Filter Widget Styles */
+.wpjm-filter-widget {
+    position: relative;
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.wpjm-filter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.wpjm-filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wpjm-filter-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+}
+
+.wpjm-filter-input,
+.wpjm-filter-select {
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 15px;
+    width: 100%;
+    background: white;
+    transition: border-color 0.3s;
+}
+
+.wpjm-filter-input:focus,
+.wpjm-filter-select:focus {
+    outline: none;
+    border-color: #007cba;
+}
+
+.wpjm-filter-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.wpjm-filter-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.wpjm-filter-btn-primary {
+    background: #007cba;
+    color: white;
+}
+
+.wpjm-filter-btn-primary:hover {
+    background: #005a87;
+}
+
+.wpjm-filter-btn-secondary {
+    background: white;
+    color: #333;
+    border: 1px solid #ddd;
+}
+
+.wpjm-filter-btn-secondary:hover {
+    background: #f5f5f5;
+}
+
+.wpjm-search-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wpjm-preloader {
+    text-align: center;
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.wpjm-preloader p {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.wpjm-spinner-large {
+    animation: wpjm-rotate 2s linear infinite;
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 20px;
+    display: block;
+}
+
+.wpjm-spinner-large .path {
+    stroke: #007cba;
+    stroke-linecap: round;
+    animation: wpjm-dash 1.5s ease-in-out infinite;
+}
+
+@keyframes wpjm-rotate {
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes wpjm-dash {
+    0% {
+        stroke-dasharray: 1, 150;
+        stroke-dashoffset: 0;
+    }
+    50% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -35;
+    }
+    100% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -124;
+    }
+}
+
+@media (max-width: 768px) {
+    .wpjm-filter-actions {
+        flex-direction: column;
+    }
+    
+    .wpjm-filter-btn {
+        width: 100%;
+    }
+}
+
+/* Inline Layout Styles */
+.wpjm-inline-layout {
+    position: relative;
+    background: transparent;
+    padding: 0;
+}
+
+.wpjm-inline-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.wpjm-inline-search-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.wpjm-inline-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.wpjm-inline-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.wpjm-inline-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.wpjm-inline-input {
+    flex: 1;
+    padding: 14px 16px;
+    border: none;
+    font-size: 15px;
+    background: transparent;
+    outline: none;
+}
+
+.wpjm-inline-input::placeholder {
+    color: #999;
+}
+
+.wpjm-location-input {
+    padding-left: 45px !important;
+}
+
+.wpjm-location-icon {
+    position: absolute;
+    left: 16px;
+    display: flex;
+    align-items: center;
+    color: #666;
+}
+
+.wpjm-inline-btn {
+    padding: 14px 20px;
+    background: #d32f2f;
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+    flex-shrink: 0;
+}
+
+.wpjm-inline-btn:hover {
+    background: #b71c1c;
+}
+
+.wpjm-inline-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.wpjm-inline-filters-toggle {
+    text-align: center;
+    padding: 10px 0;
+}
+
+.wpjm-toggle-filters {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.wpjm-toggle-filters:hover {
+    background: #e0e0e0;
+}
+
+.wpjm-toggle-filters svg {
+    width: 16px;
+    height: 16px;
+}
+
+.wpjm-inline-additional-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+.wpjm-inline-additional-filters .wpjm-filter-actions {
+    grid-column: 1 / -1;
+}
+
+/* Responsive for inline layout */
+@media (max-width: 768px) {
+    .wpjm-inline-search-fields {
+        grid-template-columns: 1fr;
+    }
+    
+    .wpjm-inline-additional-filters {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Sidebar Layout Styles - Keep existing */
+.wpjm-sidebar-layout {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.wpjm-sidebar-layout .wpjm-filter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Sidebar Filter Styles */
+.wpjm-filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.wpjm-filter-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.wpjm-filter-erase {
+    color: #666;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.wpjm-filter-erase:hover {
+    color: #d32f2f;
+}
+
+/* Radio Button Groups */
+.wpjm-radio-group,
+.wpjm-checkbox-group {
+    margin-bottom: 20px;
+}
+
+.wpjm-radio-group .wpjm-filter-label,
+.wpjm-checkbox-group .wpjm-filter-label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.wpjm-radio-options,
+.wpjm-checkbox-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.wpjm-radio-option,
+.wpjm-checkbox-option {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.wpjm-radio-option input[type="radio"],
+.wpjm-checkbox-option input[type="checkbox"] {
+    margin: 0 10px 0 0;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.wpjm-radio-option span,
+.wpjm-checkbox-option span {
+    font-size: 14px;
+    color: #333;
+}
+
+.wpjm-radio-option:hover span,
+.wpjm-checkbox-option:hover span {
+    color: #d32f2f;
+}
+
+/* Search Vacancies Button */
+.wpjm-sidebar-layout .wpjm-filter-btn-primary {
+    width: 100%;
+    background-color: #d32f2f;
+    color: #fff;
+    border: 2px solid #d32f2f;
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.wpjm-sidebar-layout .wpjm-filter-btn-primary:hover {
+    background-color: #fff;
+    color: #d32f2f;
+}
+
+/* Search Input Field */
+.wpjm-sidebar-layout .wpjm-filter-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.wpjm-sidebar-layout .wpjm-filter-input:focus {
+    outline: none;
+    border-color: #d32f2f;
+}
+
+.wpjm-sidebar-layout .wpjm-filter-field {
+    margin-bottom: 20px;
+}
+
+/* Loop Grid Preloader */
+.wpjm-loop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    backdrop-filter: blur(2px);
+}
+
+.wpjm-loop-overlay .wpjm-preloader {
+    text-align: center;
+}
+
+.wpjm-loop-overlay .wpjm-spinner-large {
+    width: 50px;
+    height: 50px;
+    animation: rotate 2s linear infinite;
+}
+
+.wpjm-loop-overlay .wpjm-spinner-large .path {
+    stroke: #d32f2f;
+    stroke-linecap: round;
+    animation: dash 1.5s ease-in-out infinite;
+}
+
+.wpjm-loop-overlay .wpjm-preloader p {
+    margin-top: 15px;
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+@keyframes rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes dash {
+    0% {
+        stroke-dasharray: 1, 150;
+        stroke-dashoffset: 0;
+    }
+    50% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -35;
+    }
+    100% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -124;
+    }
+}
