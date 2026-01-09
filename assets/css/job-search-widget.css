@@ -18,6 +18,68 @@
     gap: 8px;
 }
 
+/* Collapsible Section Styles */
+.wpjm-collapsible-section {
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.wpjm-collapsible-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.wpjm-collapsible-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 8px 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+}
+
+.wpjm-collapsible-header:hover {
+    opacity: 0.8;
+}
+
+.wpjm-collapsible-header .wpjm-filter-label {
+    margin: 0;
+    flex: 1;
+}
+
+.wpjm-collapse-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    transition: transform 0.25s ease;
+}
+
+.wpjm-collapse-icon svg {
+    display: block;
+}
+
+.wpjm-collapse-icon.collapsed {
+    transform: rotate(-90deg);
+}
+
+.wpjm-collapsible-content {
+    overflow: hidden;
+    padding-top: 8px;
+}
+
+.wpjm-collapsible-section.is-open .wpjm-collapse-icon {
+    transform: rotate(0deg);
+}
+
+.wpjm-collapsible-section.is-closed .wpjm-collapse-icon {
+    transform: rotate(-90deg);
+}
+
 .wpjm-filter-label {
     font-weight: 600;
     font-size: 14px;

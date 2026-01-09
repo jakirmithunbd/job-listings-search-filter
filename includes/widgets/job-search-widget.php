@@ -647,7 +647,6 @@ class Job_Search_Widget extends Widget_Base {
         ?>
         <div class="wpjm-filter-widget wpjm-sidebar-layout" data-widget-id="<?php echo esc_attr($widget_id); ?>" data-search-type="<?php echo esc_attr($settings['search_type']); ?>">
             <div class="wpjm-filter-header">
-                <h3><?php echo esc_html__('Filter', 'job-listings-search-filter'); ?></h3>
                 <a href="<?php echo esc_url($current_url); ?>" class="wpjm-filter-erase"><?php echo esc_html__('Clear', 'job-listings-search-filter'); ?></a>
             </div>
             
@@ -667,8 +666,16 @@ class Job_Search_Widget extends Widget_Base {
                 <?php endif; ?>
                 
                 <?php if ($settings['show_positions'] === 'yes') : ?>
-                <div class="wpjm-filter-field wpjm-radio-group">
-                    <label class="wpjm-filter-label"><?php echo esc_html($positions_label); ?></label>
+                <div class="wpjm-filter-field wpjm-radio-group wpjm-collapsible-section">
+                    <div class="wpjm-collapsible-header">
+                        <label class="wpjm-filter-label"><?php echo esc_html($positions_label); ?></label>
+                        <span class="wpjm-collapse-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="wpjm-collapsible-content" style="display: block;">
                     <div class="wpjm-radio-options">
                         <label class="wpjm-radio-option">
                             <input type="radio" name="job_type" value="" <?php checked(empty($search_job_type)); ?>>
@@ -691,16 +698,25 @@ class Job_Search_Widget extends Widget_Base {
                         }
                         ?>
                     </div>
+                    </div>
                 </div>
                 <?php endif; ?>
                 
                 <?php if ($settings['show_location'] === 'yes') : ?>
-                <div class="wpjm-filter-field wpjm-radio-group">
-                    <label class="wpjm-filter-label"><?php echo esc_html($location_label); ?></label>
+                <div class="wpjm-filter-field wpjm-radio-group wpjm-collapsible-section">
+                    <div class="wpjm-collapsible-header">
+                        <label class="wpjm-filter-label"><?php echo esc_html($location_label); ?></label>
+                        <span class="wpjm-collapse-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="wpjm-collapsible-content" style="display: block;">
                     <div class="wpjm-radio-options">
                         <label class="wpjm-radio-option">
                             <input type="radio" name="search_location" value="" <?php checked(empty($search_location)); ?>>
-                            <span><?php echo esc_html__('All locations', 'job-listings-search-filter'); ?></span>
+                            <span><?php echo esc_html__('Alle locaties', 'job-listings-search-filter'); ?></span>
                         </label>
                         <?php
                         // Get unique locations from job posts
@@ -725,12 +741,21 @@ class Job_Search_Widget extends Widget_Base {
                         }
                         ?>
                     </div>
+                    </div>
                 </div>
                 <?php endif; ?>
                 
                 <?php if ($settings['show_types'] === 'yes') : ?>
-                <div class="wpjm-filter-field wpjm-checkbox-group">
-                    <label class="wpjm-filter-label"><?php echo esc_html($types_label); ?></label>
+                <div class="wpjm-filter-field wpjm-checkbox-group wpjm-collapsible-section">
+                    <div class="wpjm-collapsible-header">
+                        <label class="wpjm-filter-label"><?php echo esc_html($types_label); ?></label>
+                        <span class="wpjm-collapse-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="wpjm-collapsible-content" style="display: block;">
                     <div class="wpjm-checkbox-options">
                         <?php
                         $search_remote = isset($_GET['remote_position']) ? sanitize_text_field($_GET['remote_position']) : '';
@@ -757,12 +782,21 @@ class Job_Search_Widget extends Widget_Base {
                         }
                         ?>
                     </div>
+                    </div>
                 </div>
                 <?php endif; ?>
                 
                 <?php if ($settings['show_date_posted'] === 'yes') : ?>
-                <div class="wpjm-filter-field wpjm-radio-group">
-                    <label class="wpjm-filter-label"><?php echo esc_html($date_posted_label); ?></label>
+                <div class="wpjm-filter-field wpjm-radio-group wpjm-collapsible-section">
+                    <div class="wpjm-collapsible-header">
+                        <label class="wpjm-filter-label"><?php echo esc_html($date_posted_label); ?></label>
+                        <span class="wpjm-collapse-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="wpjm-collapsible-content" style="display: block;">
                     <div class="wpjm-radio-options">
                         <label class="wpjm-radio-option">
                             <input type="radio" name="date_posted" value="" <?php checked(empty($search_date_posted)); ?>>
@@ -785,12 +819,21 @@ class Job_Search_Widget extends Widget_Base {
                             <span><?php echo esc_html__('Last 30 days', 'job-listings-search-filter'); ?></span>
                         </label>
                     </div>
+                    </div>
                 </div>
                 <?php endif; ?>
                 
                 <?php if ($settings['show_job_status'] === 'yes') : ?>
-                <div class="wpjm-filter-field wpjm-checkbox-group">
-                    <label class="wpjm-filter-label"><?php echo esc_html($job_status_label); ?></label>
+                <div class="wpjm-filter-field wpjm-checkbox-group wpjm-collapsible-section">
+                    <div class="wpjm-collapsible-header">
+                        <label class="wpjm-filter-label"><?php echo esc_html($job_status_label); ?></label>
+                        <span class="wpjm-collapse-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="wpjm-collapsible-content" style="display: block;">
                     <div class="wpjm-checkbox-options">
                         <?php
                         $show_featured = isset($_GET['featured']) ? sanitize_text_field($_GET['featured']) : '';
@@ -804,6 +847,7 @@ class Job_Search_Widget extends Widget_Base {
                             <input type="checkbox" name="hide_filled" value="1" <?php checked($hide_filled, '1'); ?>>
                             <span><?php echo esc_html__('Hide Filled Positions', 'job-listings-search-filter'); ?></span>
                         </label>
+                    </div>
                     </div>
                 </div>
                 <?php endif; ?>

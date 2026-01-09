@@ -105,6 +105,9 @@ Yes, the Contract Types filter uses checkboxes, allowing multiple selections. Th
 
 Enable the "Show Contract Types Filter" and check the "Remote Position" checkbox. It filters jobs with `_remote_position` meta field set to 1.
 
+== Sourcecode ==
+Source Code: [github](https://github.com/jakirmithunbd/job-listings-search-filter)
+
 == Screenshots ==
 
 1. Job Search Filter widget in sidebar layout with all filter options

@@ -2,6 +2,23 @@
     'use strict';
     
     $(document).ready(function() {
+        // Collapsible filter sections
+        $('.wpjm-collapsible-header').on('click', function() {
+            var $section = $(this).closest('.wpjm-collapsible-section');
+            var $content = $section.find('.wpjm-collapsible-content');
+            var $icon = $(this).find('.wpjm-collapse-icon');
+            
+            if ($content.is(':visible')) {
+                $content.slideUp(250);
+                $section.removeClass('is-open').addClass('is-closed');
+                $icon.addClass('collapsed');
+            } else {
+                $content.slideDown(250);
+                $section.removeClass('is-closed').addClass('is-open');
+                $icon.removeClass('collapsed');
+            }
+        });
+        
         // Auto-submit on radio/checkbox change
         $('.wpjm-radio-option input[type="radio"], .wpjm-checkbox-option input[type="checkbox"]').on('change', function() {
             $(this).closest('form').submit();

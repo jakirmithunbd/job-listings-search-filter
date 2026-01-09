@@ -117,7 +117,6 @@ final class Job_Listings_Search_Filter {
         require_once JLSF_PATH . 'includes/dynamic-tags/job-date-tag.php';
         require_once JLSF_PATH . 'includes/dynamic-tags/job-description-tag.php';
         require_once JLSF_PATH . 'includes/dynamic-tags/job-application-tag.php';
-        require_once JLSF_PATH . 'includes/dynamic-tags/company-logo-tag.php';
         require_once JLSF_PATH . 'includes/dynamic-tags/company-tagline-tag.php';
     }
 
