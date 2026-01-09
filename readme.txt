@@ -1,8 +1,8 @@
-=== Job Listings Search & Filter for Elementor ===
+=== Job Listings Search Filter ===
 Contributors: jakirmithunbd, codeconfig
 Tags: elementor, wp job manager, jobs, loop grid, dynamic tags, job search, job filter
-Requires at least: 5.8
-Tested up to: 6.4
+Requires at least: 6.2
+Tested up to: 6.9
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later

@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Job Listings Search & Filter for Elementor
+ * Plugin Name: Job Listings Search Filter
  * Plugin URI: https://wordpress.org/plugins/job-listings-search-filter/
  * Description: Seamlessly integrate WP Job Manager with Elementor Loop Grids and Dynamic Tags for powerful job listing displays with advanced filtering.
  * Version: 1.0.0
@@ -8,7 +8,7 @@
  * Author URI: 
  * Text Domain: job-listings-search-filter
  * Domain Path: /languages
- * Requires at least: 5.8
+ * Requires at least: 6.2
  * Requires PHP: 7.4
  * Requires Plugins: elementor, wp-job-manager
  * License: GPLv2 or later
