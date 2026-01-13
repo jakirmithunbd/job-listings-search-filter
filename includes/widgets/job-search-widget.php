@@ -40,6 +40,102 @@ class Job_Search_Widget extends Widget_Base {
     public function get_script_depends() {
         return ['wpjm-job-search-widget'];
     }
+    
+    /**
+     * Get count of jobs for a specific filter value
+     */
+    private function get_job_count($filter_type, $filter_value, $current_filters = []) {
+        $args = [
+            'post_type' => 'job_listing',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            'fields' => 'ids',
+        ];
+        
+        // Apply current filters except the one we're counting
+        $meta_query = [];
+        $tax_query = [];
+        
+        if (!empty($current_filters['search_location']) && $filter_type !== 'location') {
+            $meta_query[] = [
+                'key' => '_job_location',
+                'value' => $current_filters['search_location'],
+                'compare' => 'LIKE'
+            ];
+        }
+        
+        if (!empty($current_filters['job_type']) && $filter_type !== 'job_type') {
+            $job_types = is_array($current_filters['job_type']) ? $current_filters['job_type'] : explode(',', $current_filters['job_type']);
+            $tax_query[] = [
+                'taxonomy' => 'job_listing_type',
+                'field' => 'slug',
+                'terms' => $job_types,
+                'operator' => 'IN'
+            ];
+        }
+        
+        if (!empty($current_filters['category']) && $filter_type !== 'category') {
+            $categories = is_array($current_filters['category']) ? $current_filters['category'] : explode(',', $current_filters['category']);
+            $tax_query[] = [
+                'taxonomy' => 'job_listing_category',
+                'field' => 'slug',
+                'terms' => $categories,
+                'operator' => 'IN'
+            ];
+        }
+        
+        if (!empty($current_filters['working_hours']) && $filter_type !== 'working_hours') {
+            $meta_query[] = [
+                'key' => '_job_working_hours',
+                'value' => $current_filters['working_hours'],
+                'compare' => 'LIKE'
+            ];
+        }
+        
+        // Add the filter we're counting
+        switch ($filter_type) {
+            case 'location':
+                $meta_query[] = [
+                    'key' => '_job_location',
+                    'value' => $filter_value,
+                    'compare' => 'LIKE'
+                ];
+                break;
+            case 'job_type':
+                $tax_query[] = [
+                    'taxonomy' => 'job_listing_type',
+                    'field' => 'slug',
+                    'terms' => $filter_value
+                ];
+                break;
+            case 'category':
+                $tax_query[] = [
+                    'taxonomy' => 'job_listing_category',
+                    'field' => 'slug',
+                    'terms' => $filter_value
+                ];
+                break;
+            case 'working_hours':
+                $meta_query[] = [
+                    'key' => '_job_working_hours',
+                    'value' => $filter_value,
+                    'compare' => 'LIKE'
+                ];
+                break;
+        }
+        
+        if (!empty($meta_query)) {
+            $args['meta_query'] = $meta_query;
+        }
+        
+        if (!empty($tax_query)) {
+            $tax_query['relation'] = 'AND';
+            $args['tax_query'] = $tax_query;
+        }
+        
+        $query = new \WP_Query($args);
+        return $query->found_posts;
+    }
 
     protected function register_controls() {
         // Filter Settings Section
@@ -232,6 +328,81 @@ class Job_Search_Widget extends Widget_Base {
         );
         
         $this->add_control(
+            'show_working_hours',
+            [
+                'label' => esc_html__('Show Working Hours Filter', 'job-listings-search-filter'),
+                'type' => Controls_Manager::SWITCHER,
+                'label_on' => esc_html__('Show', 'job-listings-search-filter'),
+                'label_off' => esc_html__('Hide', 'job-listings-search-filter'),
+                'return_value' => 'yes',
+                'default' => 'yes',
+            ]
+        );
+        
+        $this->add_control(
+            'working_hours_label',
+            [
+                'label' => esc_html__('Working Hours Label', 'job-listings-search-filter'),
+                'type' => Controls_Manager::TEXT,
+                'default' => esc_html__('Working Hours', 'job-listings-search-filter'),
+                'condition' => [
+                    'show_working_hours' => 'yes',
+                ],
+            ]
+        );
+        
+        $this->add_control(
+            'show_job_counts',
+            [
+                'label' => esc_html__('Show Job Counts', 'job-listings-search-filter'),
+                'type' => Controls_Manager::SWITCHER,
+                'label_on' => esc_html__('Show', 'job-listings-search-filter'),
+                'label_off' => esc_html__('Hide', 'job-listings-search-filter'),
+                'return_value' => 'yes',
+                'default' => 'yes',
+                'description' => esc_html__('Display number of jobs for each filter option', 'job-listings-search-filter'),
+            ]
+        );
+        
+        $this->add_control(
+            'show_active_filters',
+            [
+                'label' => esc_html__('Show Active Filters', 'job-listings-search-filter'),
+                'type' => Controls_Manager::SWITCHER,
+                'label_on' => esc_html__('Show', 'job-listings-search-filter'),
+                'label_off' => esc_html__('Hide', 'job-listings-search-filter'),
+                'return_value' => 'yes',
+                'default' => 'yes',
+                'description' => esc_html__('Display selected filters with remove option', 'job-listings-search-filter'),
+            ]
+        );
+        
+        $this->add_control(
+            'show_no_results',
+            [
+                'label' => esc_html__('Show No Results Message', 'job-listings-search-filter'),
+                'type' => Controls_Manager::SWITCHER,
+                'label_on' => esc_html__('Show', 'job-listings-search-filter'),
+                'label_off' => esc_html__('Hide', 'job-listings-search-filter'),
+                'return_value' => 'yes',
+                'default' => 'yes',
+                'description' => esc_html__('Display message when no jobs are found', 'job-listings-search-filter'),
+            ]
+        );
+        
+        $this->add_control(
+            'no_results_message',
+            [
+                'label' => esc_html__('No Results Message', 'job-listings-search-filter'),
+                'type' => Controls_Manager::TEXTAREA,
+                'default' => esc_html__('No jobs found matching your criteria. Please try adjusting your filters.', 'job-listings-search-filter'),
+                'condition' => [
+                    'show_no_results' => 'yes',
+                ],
+            ]
+        );
+        
+        $this->add_control(
             'target_query_id',
             [
                 'label' => esc_html__('Target Loop Grid Query ID', 'job-listings-search-filter'),
@@ -264,6 +435,71 @@ class Job_Search_Widget extends Widget_Base {
                     'page_reload' => esc_html__('Page Reload', 'job-listings-search-filter'),
                 ],
                 'default' => 'ajax',
+            ]
+        );
+
+        $this->end_controls_section();
+        
+        // Text Labels Section
+        $this->start_controls_section(
+            'text_labels_section',
+            [
+                'label' => esc_html__('Text Labels', 'job-listings-search-filter'),
+                'tab' => Controls_Manager::TAB_CONTENT,
+            ]
+        );
+        
+        $this->add_control(
+            'text_all_categories',
+            [
+                'label' => esc_html__('All Categories Text', 'job-listings-search-filter'),
+                'type' => Controls_Manager::TEXT,
+                'default' => esc_html__('All Categories', 'job-listings-search-filter'),
+            ]
+        );
+        
+        $this->add_control(
+            'text_all_locations',
+            [
+                'label' => esc_html__('All Locations Text', 'job-listings-search-filter'),
+                'type' => Controls_Manager::TEXT,
+                'default' => esc_html__('All Locations', 'job-listings-search-filter'),
+            ]
+        );
+        
+        $this->add_control(
+            'text_all_types',
+            [
+                'label' => esc_html__('All Types Text', 'job-listings-search-filter'),
+                'type' => Controls_Manager::TEXT,
+                'default' => esc_html__('All Types', 'job-listings-search-filter'),
+            ]
+        );
+        
+        $this->add_control(
+            'text_clear',
+            [
+                'label' => esc_html__('Clear Text', 'job-listings-search-filter'),
+                'type' => Controls_Manager::TEXT,
+                'default' => esc_html__('Clear', 'job-listings-search-filter'),
+            ]
+        );
+        
+        $this->add_control(
+            'text_clear_filters',
+            [
+                'label' => esc_html__('Clear Filters Text', 'job-listings-search-filter'),
+                'type' => Controls_Manager::TEXT,
+                'default' => esc_html__('Clear filters', 'job-listings-search-filter'),
+            ]
+        );
+        
+        $this->add_control(
+            'text_search_button',
+            [
+                'label' => esc_html__('Search Button Text', 'job-listings-search-filter'),
+                'type' => Controls_Manager::TEXT,
+                'default' => esc_html__('Search Vacancies', 'job-listings-search-filter'),
             ]
         );
 
@@ -682,7 +918,10 @@ class Job_Search_Widget extends Widget_Base {
         <script type="text/javascript">
         var wpjmSearchData = wpjmSearchData || {
             ajaxUrl: '<?php echo esc_js(admin_url('admin-ajax.php')); ?>',
-            nonce: '<?php echo esc_js(wp_create_nonce('wpjm_search_nonce')); ?>'
+            nonce: '<?php echo esc_js(wp_create_nonce('wpjm_search_nonce')); ?>',
+            targetQueryId: '<?php echo esc_js($settings['target_query_id'] ?? 'job_listings'); ?>',
+            showNoResults: <?php echo ($settings['show_no_results'] === 'yes') ? 'true' : 'false'; ?>,
+            noResultsMessage: '<?php echo esc_js($settings['no_results_message'] ?? esc_html__('No jobs found matching your criteria.', 'job-listings-search-filter')); ?>'
         };
         </script>
         <?php
@@ -697,10 +936,110 @@ class Job_Search_Widget extends Widget_Base {
         $category_label = !empty($settings['category_label']) ? $settings['category_label'] : esc_html__('Category', 'job-listings-search-filter');
         $date_posted_label = !empty($settings['date_posted_label']) ? $settings['date_posted_label'] : esc_html__('Date Posted', 'job-listings-search-filter');
         $job_status_label = !empty($settings['job_status_label']) ? $settings['job_status_label'] : esc_html__('Job Status', 'job-listings-search-filter');
+        $working_hours_label = !empty($settings['working_hours_label']) ? $settings['working_hours_label'] : esc_html__('Working Hours', 'job-listings-search-filter');
+        
+        // Get text labels
+        $text_all_categories = !empty($settings['text_all_categories']) ? $settings['text_all_categories'] : esc_html__('All Categories', 'job-listings-search-filter');
+        $text_all_locations = !empty($settings['text_all_locations']) ? $settings['text_all_locations'] : esc_html__('All Locations', 'job-listings-search-filter');
+        $text_all_types = !empty($settings['text_all_types']) ? $settings['text_all_types'] : esc_html__('All Types', 'job-listings-search-filter');
+        $text_clear = !empty($settings['text_clear']) ? $settings['text_clear'] : esc_html__('Clear', 'job-listings-search-filter');
+        $text_clear_filters = !empty($settings['text_clear_filters']) ? $settings['text_clear_filters'] : esc_html__('Clear filters', 'job-listings-search-filter');
+        $text_search_button = !empty($settings['text_search_button']) ? $settings['text_search_button'] : esc_html__('Search Vacancies', 'job-listings-search-filter');
+        
+        $show_counts = ($settings['show_job_counts'] === 'yes');
+        $show_active_filters = ($settings['show_active_filters'] === 'yes');
+        
+        // Get current filters
+        $selected_job_types = isset($_GET['job_type']) ? (is_array($_GET['job_type']) ? $_GET['job_type'] : explode(',', $_GET['job_type'])) : [];
+        $selected_locations = isset($_GET['search_location']) ? (is_array($_GET['search_location']) ? $_GET['search_location'] : [$_GET['search_location']]) : [];
+        $selected_categories = isset($_GET['category']) ? (is_array($_GET['category']) ? $_GET['category'] : explode(',', $_GET['category'])) : [];
+        $selected_working_hours = isset($_GET['working_hours']) ? (is_array($_GET['working_hours']) ? $_GET['working_hours'] : [$_GET['working_hours']]) : [];
+        
+        $current_filters = [
+            'search_location' => implode(',', $selected_locations),
+            'job_type' => implode(',', $selected_job_types),
+            'category' => implode(',', $selected_categories),
+            'working_hours' => implode(',', $selected_working_hours),
+        ];
+        
         ?>
         <div class="wpjm-filter-widget wpjm-sidebar-layout" data-widget-id="<?php echo esc_attr($widget_id); ?>" data-search-type="<?php echo esc_attr($settings['search_type']); ?>">
+            
+            <?php if ($show_active_filters && (count($selected_job_types) > 0 || count($selected_locations) > 0 || count($selected_categories) > 0 || count($selected_working_hours) > 0 || !empty($search_keywords))) : ?>
+            <div class="wpjm-active-filters">
+                <div class="wpjm-active-filters-header">
+                    <span class="wpjm-active-filters-title"><?php echo esc_html__('Active Filters', 'job-listings-search-filter'); ?></span>
+                    <a href="<?php echo esc_url($current_url); ?>" class="wpjm-clear-all"><?php echo esc_html($text_clear_filters); ?></a>
+                </div>
+                <div class="wpjm-active-filters-list">
+                    <?php if (!empty($search_keywords)) : ?>
+                    <span class="wpjm-active-filter-tag" data-filter="search_keywords">
+                        <?php echo esc_html($search_keywords); ?>
+                        <button type="button" class="wpjm-remove-filter" data-param="search_keywords">×</button>
+                    </span>
+                    <?php endif; ?>
+                    
+                    <?php 
+                    // Job Types
+                    if (count($selected_job_types) > 0) {
+                        $job_types = get_terms(['taxonomy' => 'job_listing_type', 'hide_empty' => false]);
+                        foreach ($job_types as $type) {
+                            if (in_array($type->slug, $selected_job_types)) {
+                                printf(
+                                    '<span class="wpjm-active-filter-tag" data-filter="job_type" data-value="%s">%s<button type="button" class="wpjm-remove-filter" data-param="job_type" data-value="%s">×</button></span>',
+                                    esc_attr($type->slug),
+                                    esc_html($type->name),
+                                    esc_attr($type->slug)
+                                );
+                            }
+                        }
+                    }
+                    
+                    // Locations
+                    foreach ($selected_locations as $location) {
+                        if (!empty($location)) {
+                            printf(
+                                '<span class="wpjm-active-filter-tag" data-filter="search_location" data-value="%s">%s<button type="button" class="wpjm-remove-filter" data-param="search_location" data-value="%s">×</button></span>',
+                                esc_attr($location),
+                                esc_html($location),
+                                esc_attr($location)
+                            );
+                        }
+                    }
+                    
+                    // Categories
+                    if (count($selected_categories) > 0) {
+                        $categories = get_terms(['taxonomy' => 'job_listing_category', 'hide_empty' => false]);
+                        foreach ($categories as $cat) {
+                            if (in_array($cat->slug, $selected_categories)) {
+                                printf(
+                                    '<span class="wpjm-active-filter-tag" data-filter="category" data-value="%s">%s<button type="button" class="wpjm-remove-filter" data-param="category" data-value="%s">×</button></span>',
+                                    esc_attr($cat->slug),
+                                    esc_html($cat->name),
+                                    esc_attr($cat->slug)
+                                );
+                            }
+                        }
+                    }
+                    
+                    // Working Hours
+                    foreach ($selected_working_hours as $hours) {
+                        if (!empty($hours)) {
+                            printf(
+                                '<span class="wpjm-active-filter-tag" data-filter="working_hours" data-value="%s">%s<button type="button" class="wpjm-remove-filter" data-param="working_hours" data-value="%s">×</button></span>',
+                                esc_attr($hours),
+                                esc_html($hours),
+                                esc_attr($hours)
+                            );
+                        }
+                    }
+                    ?>
+                </div>
+            </div>
+            <?php endif; ?>
+            
             <div class="wpjm-filter-header">
-                <a href="<?php echo esc_url($current_url); ?>" class="wpjm-filter-erase"><?php echo esc_html__('Clear', 'job-listings-search-filter'); ?></a>
+                <a href="<?php echo esc_url($current_url); ?>" class="wpjm-filter-erase"><?php echo esc_html($text_clear); ?></a>
             </div>
             
             <form method="get" action="" class="wpjm-filter-form wpjm-ajax-search-form" data-widget-id="<?php echo esc_attr($widget_id); ?>" data-search-type="<?php echo esc_attr($settings['search_type']); ?>">
@@ -719,7 +1058,7 @@ class Job_Search_Widget extends Widget_Base {
                 <?php endif; ?>
                 
                 <?php if ($settings['show_positions'] === 'yes') : ?>
-                <div class="wpjm-filter-field wpjm-radio-group wpjm-collapsible-section">
+                <div class="wpjm-filter-field wpjm-checkbox-group wpjm-collapsible-section">
                     <div class="wpjm-collapsible-header">
                         <label class="wpjm-filter-label"><?php echo esc_html($positions_label); ?></label>
                         <span class="wpjm-collapse-icon">
@@ -729,11 +1068,7 @@ class Job_Search_Widget extends Widget_Base {
                         </span>
                     </div>
                     <div class="wpjm-collapsible-content" style="display: block;">
-                    <div class="wpjm-radio-options">
-                        <label class="wpjm-radio-option">
-                            <input type="radio" name="job_type" value="" <?php checked(empty($search_job_type)); ?>>
-                            <span><?php echo esc_html__('Everything', 'job-listings-search-filter'); ?></span>
-                        </label>
+                    <div class="wpjm-checkbox-options">
                         <?php
                         $job_types = get_terms([
                             'taxonomy' => 'job_listing_type',
@@ -741,11 +1076,17 @@ class Job_Search_Widget extends Widget_Base {
                         ]);
                         if (!is_wp_error($job_types) && !empty($job_types)) {
                             foreach ($job_types as $type) {
+                                $count_html = '';
+                                if ($show_counts) {
+                                    $count = $this->get_job_count('job_type', $type->slug, $current_filters);
+                                    $count_html = ' <span class="wpjm-filter-count">(' . $count . ')</span>';
+                                }
                                 printf(
-                                    '<label class="wpjm-radio-option"><input type="radio" name="job_type" value="%s" %s><span>%s</span></label>',
+                                    '<label class="wpjm-checkbox-option"><input type="checkbox" name="job_type[]" value="%s" %s><span>%s%s</span></label>',
                                     esc_attr($type->slug),
-                                    checked($search_job_type, $type->slug, false),
-                                    esc_html($type->name)
+                                    in_array($type->slug, $selected_job_types) ? 'checked' : '',
+                                    esc_html($type->name),
+                                    $count_html
                                 );
                             }
                         }
@@ -756,7 +1097,7 @@ class Job_Search_Widget extends Widget_Base {
                 <?php endif; ?>
                 
                 <?php if ($settings['show_location'] === 'yes') : ?>
-                <div class="wpjm-filter-field wpjm-radio-group wpjm-collapsible-section">
+                <div class="wpjm-filter-field wpjm-checkbox-group wpjm-collapsible-section">
                     <div class="wpjm-collapsible-header">
                         <label class="wpjm-filter-label"><?php echo esc_html($location_label); ?></label>
                         <span class="wpjm-collapse-icon">
@@ -766,11 +1107,7 @@ class Job_Search_Widget extends Widget_Base {
                         </span>
                     </div>
                     <div class="wpjm-collapsible-content" style="display: block;">
-                    <div class="wpjm-radio-options">
-                        <label class="wpjm-radio-option">
-                            <input type="radio" name="search_location" value="" <?php checked(empty($search_location)); ?>>
-                            <span><?php echo esc_html__('Alle locaties', 'job-listings-search-filter'); ?></span>
-                        </label>
+                    <div class="wpjm-checkbox-options">
                         <?php
                         // Get unique locations from job posts
                         global $wpdb;
@@ -780,15 +1117,21 @@ class Job_Search_Widget extends Widget_Base {
                             WHERE meta_key = '_job_location' 
                             AND meta_value != '' 
                             ORDER BY meta_value ASC 
-                            LIMIT 10
+                            LIMIT 20
                         ");
                         if (!empty($locations)) {
                             foreach ($locations as $location) {
+                                $count_html = '';
+                                if ($show_counts) {
+                                    $count = $this->get_job_count('location', $location, $current_filters);
+                                    $count_html = ' <span class="wpjm-filter-count">(' . $count . ')</span>';
+                                }
                                 printf(
-                                    '<label class="wpjm-radio-option"><input type="radio" name="search_location" value="%s" %s><span>%s</span></label>',
+                                    '<label class="wpjm-checkbox-option"><input type="checkbox" name="search_location[]" value="%s" %s><span>%s%s</span></label>',
                                     esc_attr($location),
-                                    checked($search_location, $location, false),
-                                    esc_html($location)
+                                    in_array($location, $selected_locations) ? 'checked' : '',
+                                    esc_html($location),
+                                    $count_html
                                 );
                             }
                         }
@@ -823,7 +1166,7 @@ class Job_Search_Widget extends Widget_Base {
                 <?php endif; ?>
                 
                 <?php if ($settings['show_category'] === 'yes') : ?>
-                <div class="wpjm-filter-field wpjm-radio-group wpjm-collapsible-section">
+                <div class="wpjm-filter-field wpjm-checkbox-group wpjm-collapsible-section">
                     <div class="wpjm-collapsible-header">
                         <label class="wpjm-filter-label"><?php echo esc_html($category_label); ?></label>
                         <span class="wpjm-collapse-icon">
@@ -833,11 +1176,7 @@ class Job_Search_Widget extends Widget_Base {
                         </span>
                     </div>
                     <div class="wpjm-collapsible-content" style="display: block;">
-                    <div class="wpjm-radio-options">
-                        <label class="wpjm-radio-option">
-                            <input type="radio" name="category" value="" <?php checked(empty($search_category)); ?>>
-                            <span><?php echo esc_html__('All Categories', 'job-listings-search-filter'); ?></span>
-                        </label>
+                    <div class="wpjm-checkbox-options">
                         <?php
                         $categories = get_terms([
                             'taxonomy' => 'job_listing_category',
@@ -845,13 +1184,67 @@ class Job_Search_Widget extends Widget_Base {
                         ]);
                         if (!is_wp_error($categories) && !empty($categories)) {
                             foreach ($categories as $cat) {
+                                $count_html = '';
+                                if ($show_counts) {
+                                    $count = $this->get_job_count('category', $cat->slug, $current_filters);
+                                    $count_html = ' <span class="wpjm-filter-count">(' . $count . ')</span>';
+                                }
                                 printf(
-                                    '<label class="wpjm-radio-option"><input type="radio" name="category" value="%s" %s><span>%s</span></label>',
+                                    '<label class="wpjm-checkbox-option"><input type="checkbox" name="category[]" value="%s" %s><span>%s%s</span></label>',
                                     esc_attr($cat->slug),
-                                    checked($search_category, $cat->slug, false),
-                                    esc_html($cat->name)
+                                    in_array($cat->slug, $selected_categories) ? 'checked' : '',
+                                    esc_html($cat->name),
+                                    $count_html
                                 );
                             }
+                        }
+                        ?>
+                    </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($settings['show_working_hours'] === 'yes') : ?>
+                <div class="wpjm-filter-field wpjm-checkbox-group wpjm-collapsible-section">
+                    <div class="wpjm-collapsible-header">
+                        <label class="wpjm-filter-label"><?php echo esc_html($working_hours_label); ?></label>
+                        <span class="wpjm-collapse-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                    <div class="wpjm-collapsible-content" style="display: block;">
+                    <div class="wpjm-checkbox-options">
+                        <?php
+                        // Get unique working hours from job posts
+                        global $wpdb;
+                        $working_hours_list = $wpdb->get_col("
+                            SELECT DISTINCT meta_value 
+                            FROM {$wpdb->postmeta} 
+                            WHERE meta_key = '_job_working_hours' 
+                            AND meta_value != '' 
+                            ORDER BY meta_value ASC 
+                            LIMIT 50
+                        ");
+                        
+                        if (!empty($working_hours_list)) {
+                            foreach ($working_hours_list as $hours) {
+                                $count_html = '';
+                                if ($show_counts) {
+                                    $count = $this->get_job_count('working_hours', $hours, $current_filters);
+                                    $count_html = ' <span class="wpjm-filter-count">(' . $count . ')</span>';
+                                }
+                                printf(
+                                    '<label class="wpjm-checkbox-option"><input type="checkbox" name="working_hours[]" value="%s" %s><span>%s%s</span></label>',
+                                    esc_attr($hours),
+                                    in_array($hours, $selected_working_hours) ? 'checked' : '',
+                                    esc_html($hours),
+                                    $count_html
+                                );
+                            }
+                        } else {
+                            echo '<p class="wpjm-no-options">' . esc_html__('No working hours found', 'job-listings-search-filter') . '</p>';
                         }
                         ?>
                     </div>
@@ -927,7 +1320,7 @@ class Job_Search_Widget extends Widget_Base {
                 
                 <div class="wpjm-filter-actions">
                     <button type="submit" class="wpjm-filter-btn wpjm-filter-btn-primary">
-                        <?php echo esc_html__('Search Vacancies', 'job-listings-search-filter'); ?>
+                        <?php echo esc_html($text_search_button); ?>
                     </button>
                 </div>
             </form>
@@ -936,7 +1329,10 @@ class Job_Search_Widget extends Widget_Base {
         <script type="text/javascript">
         var wpjmSearchData = wpjmSearchData || {
             ajaxUrl: '<?php echo esc_js(admin_url('admin-ajax.php')); ?>',
-            nonce: '<?php echo esc_js(wp_create_nonce('wpjm_search_nonce')); ?>'
+            nonce: '<?php echo esc_js(wp_create_nonce('wpjm_search_nonce')); ?>',
+            targetQueryId: '<?php echo esc_js($settings['target_query_id'] ?? 'job_listings'); ?>',
+            showNoResults: <?php echo ($settings['show_no_results'] === 'yes') ? 'true' : 'false'; ?>,
+            noResultsMessage: '<?php echo esc_js($settings['no_results_message'] ?? esc_html__('No jobs found matching your criteria.', 'job-listings-search-filter')); ?>'
         };
         </script>
         <?php
