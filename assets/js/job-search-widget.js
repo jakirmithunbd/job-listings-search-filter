@@ -38,7 +38,13 @@
             var value = $(this).data('value');
             var currentUrl = new URL(window.location.href);
             
-            if (value) {
+            // Handle multiple parameters (for hour range)
+            if (param && param.includes(',')) {
+                var params = param.split(',');
+                params.forEach(function(p) {
+                    currentUrl.searchParams.delete(p.trim());
+                });
+            } else if (value) {
                 // Remove specific value from array parameter
                 var currentValues = currentUrl.searchParams.get(param);
                 if (currentValues) {
@@ -160,6 +166,16 @@
                     formData.hide_filled = hideFilled;
                 }
                 
+                // Get hour range values
+                var minHours = $form.find('input[name="min_hours"]').val();
+                var maxHours = $form.find('input[name="max_hours"]').val();
+                if (minHours) {
+                    formData.min_hours = minHours;
+                }
+                if (maxHours) {
+                    formData.max_hours = maxHours;
+                }
+                
                 // Show loading state in Loop Grid
                 $overlay.fadeIn(200);
                 
@@ -204,7 +220,9 @@
                 date_posted: formData.date_posted || '',
                 remote_position: formData.remote_position || '',
                 featured: formData.featured || '',
-                hide_filled: formData.hide_filled || ''
+                hide_filled: formData.hide_filled || '',
+                min_hours: formData.min_hours || '',
+                max_hours: formData.max_hours || ''
             };
             
             console.log('Sending AJAX request:', ajaxData);
@@ -265,6 +283,11 @@ jQuery(document).ready(function($) {
     function updateSelectedOptionsDisplay() {
         var $widget = $('.wpjm-filter-widget');
         var $form = $widget.find('.wpjm-filter-form');
+        var $selectedBox = $widget.find('.wpjm-selected-filters-box');
+        
+        if ($selectedBox.length === 0) {
+            return; // Exit if selected box doesn't exist
+        }
         
         var $tagsContainer = $selectedBox.find('.wpjm-selected-filters-tags');
         $tagsContainer.empty();
@@ -388,6 +411,180 @@ jQuery(document).ready(function($) {
         }
         
         updateSelectedOptionsDisplay();
+    });
+    
+    // Hour Range Slider functionality (Custom Slider)
+    function initHourRangeSlider() {
+        var $wrapper = $('.wpjm-hour-slider-wrapper');
+        var $minInput = $('.wpjm-hour-min');
+        var $maxInput = $('.wpjm-hour-max');
+        
+        if ($wrapper.length === 0) {
+            return; // Exit if slider doesn't exist
+        }
+        
+        var minValue = parseInt($wrapper.attr('data-min')) || 0;
+        var maxValue = parseInt($wrapper.attr('data-max')) || 40;
+        var currentMin = parseInt($wrapper.attr('data-value-min')) || minValue;
+        var currentMax = parseInt($wrapper.attr('data-value-max')) || maxValue;
+        
+        var $minHandle = $wrapper.find('.wpjm-hour-slider-handle-min');
+        var $maxHandle = $wrapper.find('.wpjm-hour-slider-handle-max');
+        var $range = $wrapper.find('.wpjm-hour-slider-range');
+        
+        var isDragging = false;
+        var activeHandle = null;
+        var isInitializing = true;
+        
+        function updateUI() {
+            var minPercent = ((currentMin - minValue) / (maxValue - minValue)) * 100;
+            var maxPercent = ((currentMax - minValue) / (maxValue - minValue)) * 100;
+            
+            $minHandle.css('left', minPercent + '%');
+            $maxHandle.css('left', maxPercent + '%');
+            
+            $range.css({
+                'left': minPercent + '%',
+                'width': (maxPercent - minPercent) + '%'
+            });
+            
+            $minInput.val(currentMin);
+            $maxInput.val(currentMax);
+            
+            $wrapper.attr('data-value-min', currentMin);
+            $wrapper.attr('data-value-max', currentMax);
+        }
+        
+        function getValueFromPosition(clientX) {
+            var rect = $wrapper[0].getBoundingClientRect();
+            var percent = (clientX - rect.left) / rect.width;
+            percent = Math.max(0, Math.min(1, percent));
+            var value = Math.round(minValue + (percent * (maxValue - minValue)));
+            return value;
+        }
+        
+        function handleMove(clientX) {
+            if (!isDragging || !activeHandle) return;
+            
+            var value = getValueFromPosition(clientX);
+            
+            if (activeHandle === 'min') {
+                currentMin = Math.min(value, currentMax);
+            } else {
+                currentMax = Math.max(value, currentMin);
+            }
+            
+            updateUI();
+        }
+        
+        function handleEnd() {
+            if (isDragging && !isInitializing) {
+                isDragging = false;
+                activeHandle = null;
+                $minHandle.removeClass('dragging');
+                $maxHandle.removeClass('dragging');
+                
+                // Submit form after dragging ends
+                setTimeout(function() {
+                    $wrapper.closest('form').submit();
+                }, 300);
+            }
+        }
+        
+        // Mouse events
+        $minHandle.on('mousedown', function(e) {
+            e.preventDefault();
+            isDragging = true;
+            activeHandle = 'min';
+            $(this).addClass('dragging');
+        });
+        
+        $maxHandle.on('mousedown', function(e) {
+            e.preventDefault();
+            isDragging = true;
+            activeHandle = 'max';
+            $(this).addClass('dragging');
+        });
+        
+        $(document).on('mousemove.hourslider', function(e) {
+            if (isDragging) {
+                handleMove(e.clientX);
+            }
+        });
+        
+        $(document).on('mouseup.hourslider', function() {
+            if (isDragging) {
+                handleEnd();
+            }
+        });
+        
+        // Touch events
+        $minHandle.on('touchstart', function(e) {
+            e.preventDefault();
+            isDragging = true;
+            activeHandle = 'min';
+            $(this).addClass('dragging');
+        });
+        
+        $maxHandle.on('touchstart', function(e) {
+            e.preventDefault();
+            isDragging = true;
+            activeHandle = 'max';
+            $(this).addClass('dragging');
+        });
+        
+        $(document).on('touchmove.hourslider', function(e) {
+            if (isDragging && e.originalEvent.touches.length > 0) {
+                handleMove(e.originalEvent.touches[0].clientX);
+            }
+        });
+        
+        $(document).on('touchend.hourslider', function() {
+            if (isDragging) {
+                handleEnd();
+            }
+        });
+        
+        // Click on track to move nearest handle
+        $wrapper.on('click', function(e) {
+            if ($(e.target).hasClass('wpjm-hour-slider-handle')) {
+                return;
+            }
+            
+            var value = getValueFromPosition(e.clientX);
+            var distToMin = Math.abs(value - currentMin);
+            var distToMax = Math.abs(value - currentMax);
+            
+            if (distToMin < distToMax) {
+                currentMin = Math.min(value, currentMax);
+            } else {
+                currentMax = Math.max(value, currentMin);
+            }
+            
+            updateUI();
+            
+            if (!isInitializing) {
+                setTimeout(function() {
+                    $wrapper.closest('form').submit();
+                }, 300);
+            }
+        });
+        
+        // Initialize UI
+        updateUI();
+        
+        // Allow submissions after initialization
+        setTimeout(function() {
+            isInitializing = false;
+        }, 500);
+    }
+    
+    // Initialize hour range slider
+    initHourRangeSlider();
+    
+    // Re-initialize after AJAX updates
+    $(document).on('wpjm-filters-updated', function() {
+        initHourRangeSlider();
     });
     
     // Initial update on page load

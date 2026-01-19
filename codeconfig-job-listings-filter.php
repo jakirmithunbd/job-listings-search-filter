@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name: Job Listings Search Filter
- * Plugin URI: https://wordpress.org/plugins/job-listings-search-filter/
+ * Plugin Name: CodeConfig Job Listings Filter for Elementor
+ * Plugin URI: https://wordpress.org/plugins/codeconfig-job-listings-filter/
  * Description: Seamlessly integrate WP Job Manager with Elementor Loop Grids and Dynamic Tags for powerful job listing displays with advanced filtering.
  * Version: 1.0.0
  * Author: CodeConfig
  * Author URI: 
- * Text Domain: job-listings-search-filter
+ * Text Domain: codeconfig-job-listings-filter
  * Domain Path: /languages
  * Requires at least: 6.2
  * Requires PHP: 7.4
@@ -364,8 +364,20 @@ final class Job_Listings_Search_Filter {
             ];
         }
         
-        // 2.8 WORKING HOURS - Filter by _job_working_hours meta field (supports multiple)
-        if (!empty($request['working_hours'])) {
+        // 2.8 WORKING HOURS - Filter by _job_working_hours meta field (range-based)
+        if (isset($request['min_hours']) || isset($request['max_hours'])) {
+            $min_hours = isset($request['min_hours']) ? intval($request['min_hours']) : 0;
+            $max_hours = isset($request['max_hours']) ? intval($request['max_hours']) : 9999;
+            
+            $meta_query[] = [
+                'key' => '_job_working_hours',
+                'value' => [$min_hours, $max_hours],
+                'type' => 'NUMERIC',
+                'compare' => 'BETWEEN'
+            ];
+        }
+        // Legacy support for old working_hours array format
+        elseif (!empty($request['working_hours'])) {
             $hours = is_array($request['working_hours']) ? $request['working_hours'] : explode(',', $request['working_hours']);
             $hours = array_filter(array_map('sanitize_text_field', $hours));
             

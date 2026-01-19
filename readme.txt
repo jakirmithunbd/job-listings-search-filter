@@ -1,4 +1,4 @@
-=== Job Listings Search Filter ===
+=== CodeConfig Job Listings Filter for Elementor ===
 Contributors: jakirmithunbd, codeconfig
 Tags: elementor, wp job manager, jobs, loop grid, dynamic tags, job search, job filter
 Requires at least: 6.2
@@ -12,7 +12,7 @@ Seamlessly integrate WP Job Manager with Elementor Loop Grids and Dynamic Tags f
 
 == Description ==
 
-**Job Listings Search & Filter for Elementor** bridges the gap between WP Job Manager and Elementor, allowing you to create stunning job listing pages with Elementor's Loop Grid and access job data through Dynamic Tags.
+**CodeConfig Job Listings Filter for Elementor** bridges the gap between WP Job Manager and Elementor, allowing you to create stunning job listing pages with Elementor's Loop Grid and access job data through Dynamic Tags.
 
 = Key Features =
 
@@ -63,7 +63,7 @@ Seamlessly integrate WP Job Manager with Elementor Loop Grids and Dynamic Tags f
 
 == Installation ==
 
-1. Upload the plugin files to `/wp-content/plugins/job-listings-search-filter` directory, or install the plugin through the WordPress plugins screen directly.
+1. Upload the plugin files to `/wp-content/plugins/codeconfig-job-listings-filter` directory, or install the plugin through the WordPress plugins screen directly.
 2. Activate the plugin through the 'Plugins' screen in WordPress
 3. Make sure you have both Elementor and WP Job Manager plugins installed and activated
 4. Create a new page with Elementor
@@ -106,7 +106,7 @@ Yes, the Contract Types filter uses checkboxes, allowing multiple selections. Th
 Enable the "Show Contract Types Filter" and check the "Remote Position" checkbox. It filters jobs with `_remote_position` meta field set to 1.
 
 == Sourcecode ==
-Source Code: [github](https://github.com/jakirmithunbd/job-listings-search-filter)
+Source Code: [github](https://github.com/jakirmithunbd/codeconfig-job-listings-filter)
 
 == Screenshots ==
 

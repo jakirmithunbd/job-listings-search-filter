@@ -790,3 +790,114 @@ background: none;
     min-height: 100px;
     position: relative;
 }
+/* Hour Range Slider Styles */
+.wpjm-hour-range-container {
+    padding: 10px;
+}
+
+.wpjm-hour-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.wpjm-hour-input {
+    width: 80px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    text-align: center;
+    background: white;
+    cursor: default;
+}
+
+.wpjm-hour-input:focus {
+    outline: none;
+    border-color: #007cba;
+}
+
+.wpjm-hour-separator {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+.wpjm-hour-label {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Range Slider Wrapper */
+.wpjm-hour-slider-wrapper {
+    position: relative !important;
+    height: 18px !important;
+    margin: 15px 0 !important;
+    background: transparent !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* Slider Track (gray background) */
+.wpjm-hour-slider-track {
+    position: absolute !important;
+    width: 100% !important;
+    height: 6px !important;
+    background: #ddd !important;
+    border-radius: 3px !important;
+    top: 50% !important;
+    left: 0 !important;
+    transform: translateY(-50%) !important;
+    z-index: 1 !important;
+}
+
+/* Slider Range (blue active range) */
+.wpjm-hour-slider-range {
+    position: absolute !important;
+    height: 6px !important;
+    background: #007cba !important;
+    border-radius: 3px !important;
+    top: 50% !important;
+    transform: translateY(-50%);
+    left: 0%;
+    width: 0%;
+    z-index: 2 !important;
+}
+
+/* Slider Handles */
+.wpjm-hour-slider-handle {
+    position: absolute !important;
+    width: 18px !important;
+    height: 18px !important;
+    border-radius: 50% !important;
+    background: #007cba !important;
+    cursor: grab !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    border: 2px solid white !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    z-index: 3 !important;
+    transition: box-shadow 0.2s ease !important;
+}
+
+.wpjm-hour-slider-handle:hover {
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+.wpjm-hour-slider-handle:active,
+.wpjm-hour-slider-handle.dragging {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4) !important;
+    cursor: grabbing !important;
+}
+
+.wpjm-hour-slider-handle-min {
+    left: 0%;
+}
+
+.wpjm-hour-slider-handle-max {
+    left: 100%;
+}

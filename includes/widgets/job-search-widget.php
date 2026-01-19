@@ -914,16 +914,18 @@ class Job_Search_Widget extends Widget_Base {
                 <?php endif; ?>
             </form>
         </div>
-        
-        <script type="text/javascript">
-        var wpjmSearchData = wpjmSearchData || {
-            ajaxUrl: '<?php echo esc_js(admin_url('admin-ajax.php')); ?>',
-            nonce: '<?php echo esc_js(wp_create_nonce('wpjm_search_nonce')); ?>',
-            targetQueryId: '<?php echo esc_js($settings['target_query_id'] ?? 'job_listings'); ?>',
-            showNoResults: <?php echo ($settings['show_no_results'] === 'yes') ? 'true' : 'false'; ?>,
-            noResultsMessage: '<?php echo esc_js($settings['no_results_message'] ?? esc_html__('No jobs found matching your criteria.', 'job-listings-search-filter')); ?>'
-        };
-        </script>
+        <?php
+        // Add inline script data using WordPress proper method
+        $inline_script = sprintf(
+            "var wpjmSearchData = wpjmSearchData || {ajaxUrl: '%s', nonce: '%s', targetQueryId: '%s', showNoResults: %s, noResultsMessage: '%s'};",
+            esc_js(admin_url('admin-ajax.php')),
+            esc_js(wp_create_nonce('wpjm_search_nonce')),
+            esc_js($settings['target_query_id'] ?? 'job_listings'),
+            ($settings['show_no_results'] === 'yes') ? 'true' : 'false',
+            esc_js($settings['no_results_message'] ?? esc_html__('No jobs found matching your criteria.', 'job-listings-search-filter'))
+        );
+        wp_add_inline_script('wpjm-job-search-widget', $inline_script, 'before');
+        ?>
         <?php
     }
     
@@ -965,7 +967,10 @@ class Job_Search_Widget extends Widget_Base {
         ?>
         <div class="wpjm-filter-widget wpjm-sidebar-layout" data-widget-id="<?php echo esc_attr($widget_id); ?>" data-search-type="<?php echo esc_attr($settings['search_type']); ?>">
             
-            <?php if ($show_active_filters && (count($selected_job_types) > 0 || count($selected_locations) > 0 || count($selected_categories) > 0 || count($selected_working_hours) > 0 || !empty($search_keywords))) : ?>
+            <?php 
+            $has_hour_range = isset($_GET['min_hours']) || isset($_GET['max_hours']);
+            if ($show_active_filters && (count($selected_job_types) > 0 || count($selected_locations) > 0 || count($selected_categories) > 0 || count($selected_working_hours) > 0 || $has_hour_range || !empty($search_keywords))) : 
+            ?>
             <div class="wpjm-active-filters">
                 <div class="wpjm-active-filters-header">
                     <span class="wpjm-active-filters-title"><?php echo esc_html__('Active Filters', 'job-listings-search-filter'); ?></span>
@@ -1022,15 +1027,37 @@ class Job_Search_Widget extends Widget_Base {
                         }
                     }
                     
-                    // Working Hours
-                    foreach ($selected_working_hours as $hours) {
-                        if (!empty($hours)) {
-                            printf(
-                                '<span class="wpjm-active-filter-tag" data-filter="working_hours" data-value="%s">%s<button type="button" class="wpjm-remove-filter" data-param="working_hours" data-value="%s">×</button></span>',
-                                esc_attr($hours),
-                                esc_html($hours),
-                                esc_attr($hours)
-                            );
+                    // Working Hours - show range if set
+                    $min_hours_filter = isset($_GET['min_hours']) ? intval($_GET['min_hours']) : null;
+                    $max_hours_filter = isset($_GET['max_hours']) ? intval($_GET['max_hours']) : null;
+                    
+                    if ($min_hours_filter !== null || $max_hours_filter !== null) {
+                        $hours_text = '';
+                        if ($min_hours_filter !== null && $max_hours_filter !== null) {
+                            $hours_text = $min_hours_filter . '-' . $max_hours_filter . ' uren';
+                        } elseif ($min_hours_filter !== null) {
+                            $hours_text = $min_hours_filter . '+ uren';
+                        } elseif ($max_hours_filter !== null) {
+                            $hours_text = 'Tot ' . $max_hours_filter . ' uren';
+                        }
+                        
+                        if (!empty($hours_text)) {
+                            echo '<span class="wpjm-active-filter-tag" data-filter="working_hours_range">';
+                            echo esc_html($hours_text);
+                            echo '<button type="button" class="wpjm-remove-filter" data-param="min_hours,max_hours">×</button>';
+                            echo '</span>';
+                        }
+                    } else {
+                        // Legacy: show old format working hours
+                        foreach ($selected_working_hours as $hours) {
+                            if (!empty($hours)) {
+                                printf(
+                                    '<span class="wpjm-active-filter-tag" data-filter="working_hours" data-value="%s">%s<button type="button" class="wpjm-remove-filter" data-param="working_hours" data-value="%s">×</button></span>',
+                                    esc_attr($hours),
+                                    esc_html($hours),
+                                    esc_attr($hours)
+                                );
+                            }
                         }
                     }
                     ?>
@@ -1205,7 +1232,7 @@ class Job_Search_Widget extends Widget_Base {
                 <?php endif; ?>
                 
                 <?php if ($settings['show_working_hours'] === 'yes') : ?>
-                <div class="wpjm-filter-field wpjm-checkbox-group wpjm-collapsible-section">
+                <div class="wpjm-filter-field wpjm-hour-range-group wpjm-collapsible-section">
                     <div class="wpjm-collapsible-header">
                         <label class="wpjm-filter-label"><?php echo esc_html($working_hours_label); ?></label>
                         <span class="wpjm-collapse-icon">
@@ -1215,39 +1242,55 @@ class Job_Search_Widget extends Widget_Base {
                         </span>
                     </div>
                     <div class="wpjm-collapsible-content" style="display: block;">
-                    <div class="wpjm-checkbox-options">
                         <?php
-                        // Get unique working hours from job posts
+                        // Get min and max working hours from database
                         global $wpdb;
-                        $working_hours_list = $wpdb->get_col("
-                            SELECT DISTINCT meta_value 
+                        $max_hours = $wpdb->get_var("
+                            SELECT MAX(CAST(meta_value AS UNSIGNED))
                             FROM {$wpdb->postmeta} 
                             WHERE meta_key = '_job_working_hours' 
-                            AND meta_value != '' 
-                            ORDER BY meta_value ASC 
-                            LIMIT 50
+                            AND meta_value != ''
+                            AND meta_value REGEXP '^[0-9]+$'
                         ");
                         
-                        if (!empty($working_hours_list)) {
-                            foreach ($working_hours_list as $hours) {
-                                $count_html = '';
-                                if ($show_counts) {
-                                    $count = $this->get_job_count('working_hours', $hours, $current_filters);
-                                    $count_html = ' <span class="wpjm-filter-count">(' . $count . ')</span>';
-                                }
-                                printf(
-                                    '<label class="wpjm-checkbox-option"><input type="checkbox" name="working_hours[]" value="%s" %s><span>%s%s</span></label>',
-                                    esc_attr($hours),
-                                    in_array($hours, $selected_working_hours) ? 'checked' : '',
-                                    esc_html($hours),
-                                    $count_html
-                                );
-                            }
-                        } else {
-                            echo '<p class="wpjm-no-options">' . esc_html__('No working hours found', 'job-listings-search-filter') . '</p>';
+                        if (empty($max_hours) || $max_hours < 40) {
+                            $max_hours = 40; // Default max hours
                         }
+                        
+                        // Get current values from URL
+                        $min_hours = isset($_GET['min_hours']) ? intval($_GET['min_hours']) : 0;
+                        $max_hours_selected = isset($_GET['max_hours']) ? intval($_GET['max_hours']) : $max_hours;
                         ?>
-                    </div>
+                        <div class="wpjm-hour-range-container">
+                            <div class="wpjm-hour-inputs">
+                                <input type="number" 
+                                       name="min_hours" 
+                                       class="wpjm-hour-input wpjm-hour-min" 
+                                       value="<?php echo esc_attr($min_hours); ?>" 
+                                       min="0" 
+                                       max="<?php echo esc_attr($max_hours); ?>"
+                                       readonly />
+                                <span class="wpjm-hour-separator">t/m</span>
+                                <input type="number" 
+                                       name="max_hours" 
+                                       class="wpjm-hour-input wpjm-hour-max" 
+                                       value="<?php echo esc_attr($max_hours_selected); ?>" 
+                                       min="0" 
+                                       max="<?php echo esc_attr($max_hours); ?>"
+                                       readonly />
+                                <span class="wpjm-hour-label">uren</span>
+                            </div>
+                            <div class="wpjm-hour-slider-wrapper" 
+                                 data-min="0" 
+                                 data-max="<?php echo esc_attr($max_hours); ?>" 
+                                 data-value-min="<?php echo esc_attr($min_hours); ?>" 
+                                 data-value-max="<?php echo esc_attr($max_hours_selected); ?>">
+                                <div class="wpjm-hour-slider-track"></div>
+                                <div class="wpjm-hour-slider-range"></div>
+                                <div class="wpjm-hour-slider-handle wpjm-hour-slider-handle-min" data-handle="min"></div>
+                                <div class="wpjm-hour-slider-handle wpjm-hour-slider-handle-max" data-handle="max"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <?php endif; ?>
@@ -1325,16 +1368,18 @@ class Job_Search_Widget extends Widget_Base {
                 </div>
             </form>
         </div>
-        
-        <script type="text/javascript">
-        var wpjmSearchData = wpjmSearchData || {
-            ajaxUrl: '<?php echo esc_js(admin_url('admin-ajax.php')); ?>',
-            nonce: '<?php echo esc_js(wp_create_nonce('wpjm_search_nonce')); ?>',
-            targetQueryId: '<?php echo esc_js($settings['target_query_id'] ?? 'job_listings'); ?>',
-            showNoResults: <?php echo ($settings['show_no_results'] === 'yes') ? 'true' : 'false'; ?>,
-            noResultsMessage: '<?php echo esc_js($settings['no_results_message'] ?? esc_html__('No jobs found matching your criteria.', 'job-listings-search-filter')); ?>'
-        };
-        </script>
+        <?php
+        // Add inline script data using WordPress proper method
+        $inline_script = sprintf(
+            "var wpjmSearchData = wpjmSearchData || {ajaxUrl: '%s', nonce: '%s', targetQueryId: '%s', showNoResults: %s, noResultsMessage: '%s'};",
+            esc_js(admin_url('admin-ajax.php')),
+            esc_js(wp_create_nonce('wpjm_search_nonce')),
+            esc_js($settings['target_query_id'] ?? 'job_listings'),
+            ($settings['show_no_results'] === 'yes') ? 'true' : 'false',
+            esc_js($settings['no_results_message'] ?? esc_html__('No jobs found matching your criteria.', 'job-listings-search-filter'))
+        );
+        wp_add_inline_script('wpjm-job-search-widget', $inline_script, 'before');
+        ?>
         <?php
     }
 }
